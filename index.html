@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iluminação Dinâmica</title>
+  <link rel="stylesheet" href="example.css">
+  <link rel="stylesheet" href="errors.css">
+  <script src="vanilla-utils/errors.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Iluminação Dinâmica</h1>
+    <p>
+      Exibe um modelo glTF iluminado por uma luz pontual, ilustrando como
+      funcionam os modelos de iluminação de Gouraud, Phong e Blinn-Phong:
+    </p>
+    <canvas class="example-canvas shadow" width="720" height="720"></canvas>
+    <details open>
+      <summary>Instruções</summary>
+      <div class="instructions">
+        <div class="input-controls">
+          <label for="input-model">Modelo:</label>
+          <span>
+            <select id="input-model" data-bind-select="state.model.selected" data-bind-options="state.model.options" data-bind-option-value="$" data-bind-option-content="name">
+            </select>
+          </span>
+        </div>
+        <div class="input-controls">
+          <label for="input-shader"><kbd data-bind-class="pressed:state.keys.KeyS">S</kbd>hader:</label>
+          <span>
+            <select id="input-shader" data-bind-select="state.shaders.selected" data-bind-options="state.shaders.options" data-bind-option-value="$" data-bind-option-content="name">
+            </select>
+          </span>
+        </div>
+        <p>
+          A câmera orbita o modelo. Arraste o mouse para girá-la, use a roda
+          para aproximar/afastar. Ao interagir, a rotação automática é pausada.
+        </p>
+        <dl class="controls-instructions">
+          <dt><kbd data-bind-class="pressed:state.keys.KeyR">R</kbd></dt>
+          <dd>
+            <label><input type="checkbox" data-bind-checked="state.camera.autoRotate"> Rotação automática da câmera</label>
+          </dd>
+          <dt><kbd data-bind-class="pressed:state.keys.KeyW">W</kbd></dt>
+          <dd>
+            <label><input type="checkbox" data-bind-checked="state.wireframe"> Mostra o modelo de arame (wireframe)</label>
+          </dd>
+          <dt><kbd data-bind-class="pressed:state.keys.KeyL">L</kbd></dt>
+          <dd>
+            <label><input type="checkbox" data-bind-checked="state.light.orbit"> Luz orbitando o modelo</label>
+          </dd>
+          <dt><kbd data-bind-class="pressed:state.keys.ArrowLeft">←</kbd><kbd data-bind-class="pressed:state.keys.ArrowRight">→</kbd><kbd data-bind-class="pressed:state.keys.ArrowUp">↑</kbd><kbd data-bind-class="pressed:state.keys.ArrowDown">↓</kbd></dt>
+          <dd>Giram a câmera</dd>
+        </dl>
+        <div class="sliders">
+          <label for="input-light-color">Cor da luz:</label>
+          <input id="input-light-color" type="color" data-bind-value="state.light.color">
+          <label for="input-ambient">Ambiente (ka):</label>
+          <input id="input-ambient" type="range" min="0" max="1" step="0.01" data-bind-value="state.lighting.ambient">
+          <label for="input-diffuse">Difusa (kd):</label>
+          <input id="input-diffuse" type="range" min="0" max="1" step="0.01" data-bind-value="state.lighting.diffuse">
+          <label for="input-specular">Especular (ks):</label>
+          <input id="input-specular" type="range" min="0" max="1" step="0.01" data-bind-value="state.lighting.specular">
+          <label for="input-shininess">Brilho (n):</label>
+          <input id="input-shininess" type="range" min="1" max="256" step="1" data-bind-value="state.lighting.shininess">
+        </div>
+      </div>
+    </details>
+    <p class="credits">
+      Modelo <a href="https://sketchfab.com/3d-models/sprigatito-f479fde14dee41678892cb192f7eecac">Sprigatito</a>
+      por Squirmy Worm (CC-BY-4.0).
+      <a href="https://sketchfab.com/3d-models/voltorb-cd8079ed3d664a738b6c694504e2ef28">Voltorb</a> por nguyenlouis32 (CC-BY-4.0).
+    </p>
+  </main>
+  <script id="entry" type="module">
+    import { setupWebGL, initialize, render, update } from './main.vanilla.js';
+
+    const gl = setupWebGL('.example-canvas', {alpha: false})
+    await initialize(gl)
+
+    let lastTime = 0;
+    function mainLoop(currentTime) {
+      // (0) descobre o tempo decorrido desde o último frame (deltaTime)
+      const deltaTime = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+    
+      // (1) atualiza o estado da aplicação (jogo, animação etc.)
+      update(deltaTime);
+
+      // (2) renderiza a cena sob o estado atual
+      render(gl);
+
+      // registra o próximo frame para ser executado o mais rápido possível
+      requestAnimationFrame(mainLoop);
+    }
+    requestAnimationFrame(mainLoop);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ℹ️ necessário apenas para o exemplo, e não para uma aplicação real: -->
+<!-- conecta a interface de controle (html) com o state da aplicação (js) -->
+<script type="module">
+    import { registerBindingContext } from './vanilla-utils/data-binding.js'
+    import { state as appState } from './main.vanilla.js'
+    registerBindingContext('state', appState)
+    window.state = appState
+</script>
