@@ -1,5 +1,4 @@
 import { createProgramFromFiles, setupWebGL } from './vanilla-utils/shader.js'
-import { createShader, createProgram } from './vanilla-utils/shader.js'
 import { sphere } from './vanilla-utils/geometry.js'
 import { loadGLB, ATTRIBUTE_LOCATIONS } from './vanilla-utils/gltf.js'
 import { m4, v3 } from './twgl.full.module.js'
@@ -139,19 +138,8 @@ function drawSky(gl) {
     gl.enable(gl.DEPTH_TEST)
 }
 
-function createLightMarker(gl) {
-    const vs = createShader(gl, 'marker-vs', gl.VERTEX_SHADER, `#version 300 es
-        layout(location = 0) in vec3 a_coords;
-        uniform mat4 u_model;
-        uniform mat4 u_view;
-        uniform mat4 u_projection;
-        void main() { gl_Position = u_projection * u_view * u_model * vec4(a_coords, 1.0); }`)
-    const fs = createShader(gl, 'marker-fs', gl.FRAGMENT_SHADER, `#version 300 es
-        precision mediump float;
-        uniform vec3 u_lightColor;
-        out vec4 outColor;
-        void main() { outColor = vec4(u_lightColor, 1.0); }`)
-    const id = createProgram(gl, vs, fs)
+async function createLightMarker(gl) {
+    const id = await createProgramFromFiles(gl, 'marker.vertex.glsl', 'marker.fragment.glsl')
     const locations = {}
     for (const name of ['u_model', 'u_view', 'u_projection', 'u_lightColor']) {
         locations[name] = gl.getUniformLocation(id, name)
@@ -177,7 +165,7 @@ export async function initialize(gl) {
     state.shaders.programs = await Promise.all(
         state.shaders.options.map(option => createShaderProgram(gl, option.prefix))
     )
-    createLightMarker(gl)
+    await createLightMarker(gl)
     await createSky(gl)
 
     await loadModel(gl, Number(state.model.selected))
