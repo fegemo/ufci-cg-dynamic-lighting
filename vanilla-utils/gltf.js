@@ -205,6 +205,21 @@ function nodeMatrix(node) {
   return m
 }
 
+// matrizes locais das instâncias de EXT_mesh_gpu_instancing (lista vazia se o nó não usa a extensão)
+function instanceMatrices(gltf, bin, node) {
+  const attributes = node.extensions?.EXT_mesh_gpu_instancing?.attributes
+  if (!attributes) return []
+  const translations = attributes.TRANSLATION !== undefined ? readAccessor(gltf, bin, attributes.TRANSLATION) : null
+  const rotations = attributes.ROTATION !== undefined ? readAccessor(gltf, bin, attributes.ROTATION) : null
+  const scales = attributes.SCALE !== undefined ? readAccessor(gltf, bin, attributes.SCALE) : null
+  const count = gltf.accessors[Object.values(attributes)[0]].count
+  return Array.from({ length: count }, (_, i) => nodeMatrix({
+    translation: translations?.subarray(i * 3, i * 3 + 3),
+    rotation: rotations?.subarray(i * 4, i * 4 + 4),
+    scale: scales?.subarray(i * 3, i * 3 + 3)
+  }))
+}
+
 function createTexture(gl, gltf, images, textureIndex) {
   const texture = gl.createTexture()
   gl.bindTexture(gl.TEXTURE_2D, texture)
@@ -232,7 +247,7 @@ function createTexture(gl, gltf, images, textureIndex) {
 
 // Carrega um .glb e retorna:
 // {
-//   draws: [{ vao, wireframeVao, wireframeCount, count, indexType, model, baseColor, texture, doubleSided }],
+//   draws: [{ vao, wireframeVao, wireframeCount, count, indexType, model, baseColor, metallic, roughness, texture, doubleSided }],
 //   bounds: { min: [x,y,z], max: [x,y,z] }   // em espaço de mundo do modelo
 // }
 export async function loadGLB(gl, url) {
@@ -291,6 +306,9 @@ export async function loadGLB(gl, url) {
     const skinned = node.skin !== undefined
     const jointMatrices = skinned ? jointMatricesOfSkin(node.skin) : null
     const world = skinned ? m4.identity() : nodeWorld
+    // EXT_mesh_gpu_instancing: uma matriz de mundo por instância da malha
+    const instanceWorlds = instanceMatrices(gltf, bin, node).map(m => m4.multiply(nodeWorld, m))
+    if (instanceWorlds.length === 0) instanceWorlds.push(world)
 
     for (const primitive of gltf.meshes[node.mesh].primitives) {
       if ((primitive.mode ?? 4) !== 4) continue
@@ -332,27 +350,34 @@ export async function loadGLB(gl, url) {
       const edges = uniqueEdges(indices, positions.length / 3)
       const wireframeVao = createVAO(edges)
 
-      for (let i = 0; i < positions.length; i += 3) {
-        const p = m4.transformPoint(world, [positions[i], positions[i + 1], positions[i + 2]])
-        for (let k = 0; k < 3; k++) {
-          min[k] = Math.min(min[k], p[k])
-          max[k] = Math.max(max[k], p[k])
-        }
-      }
-
       const material = gltf.materials?.[primitive.material] ?? {}
       const pbr = material.pbrMetallicRoughness ?? {}
-      draws.push({
-        vao,
-        wireframeVao,
-        wireframeCount: edges.length,
-        count: indices.length,
-        indexType: indices instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT,
-        model: world,
-        baseColor: new Float32Array(pbr.baseColorFactor ?? [1, 1, 1, 1]),
-        texture: createTexture(gl, gltf, images, pbr.baseColorTexture?.index),
-        doubleSided: material.doubleSided ?? false
-      })
+      const texture = createTexture(gl, gltf, images, pbr.baseColorTexture?.index)
+
+      // as instâncias compartilham VAOs e textura; só a matriz de mundo muda
+      for (const instanceWorld of instanceWorlds) {
+        for (let i = 0; i < positions.length; i += 3) {
+          const p = m4.transformPoint(instanceWorld, [positions[i], positions[i + 1], positions[i + 2]])
+          for (let k = 0; k < 3; k++) {
+            min[k] = Math.min(min[k], p[k])
+            max[k] = Math.max(max[k], p[k])
+          }
+        }
+        draws.push({
+          vao,
+          wireframeVao,
+          wireframeCount: edges.length,
+          count: indices.length,
+          indexType: indices instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT,
+          model: instanceWorld,
+          baseColor: new Float32Array(pbr.baseColorFactor ?? [1, 1, 1, 1]),
+          // valores padrão da especificação glTF quando o material não os define
+          metallic: pbr.metallicFactor ?? 1,
+          roughness: pbr.roughnessFactor ?? 1,
+          texture,
+          doubleSided: material.doubleSided ?? false
+        })
+      }
     }
   }
 

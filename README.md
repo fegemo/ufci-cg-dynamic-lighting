@@ -5,7 +5,7 @@ a cor de cada pixel vir "pronta" da textura do modelo (o *albedo*), ela passa a
 ser calculada nos shaders a partir de uma luz, da posição da câmera e da
 orientação (normal) da superfície naquele ponto.
 
-A cena mostra um modelo glTF (`sprigatito.glb`, `bulbasaur.glb` ou `voltorb.glb`, em `models/`, à sua escolha no seletor) com uma **câmera
+A cena mostra um modelo glTF (`durant.glb`, `bulbasaur.glb` ou `voltorb.glb`, em `models/`, à sua escolha no seletor) com uma **câmera
 orbital** que gira automaticamente ao redor dele, e uma luz pontual (a esfera
 pequena). Você pode:
 
@@ -129,8 +129,8 @@ para ponto/vetor de 3 dimensões ([v3][v3-docs]).
 
 ## Créditos
 
-- Modelo [Sprigatito](https://sketchfab.com/3d-models/sprigatito-f479fde14dee41678892cb192f7eecac)
-  por Squirmy Worm, licença [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/).
+- Modelo [Durant](https://sketchfab.com/3d-models/e6109cc6b0f941848ea18d6a9e5913c6)
+  por A110082003, licença [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/).
 - Modelo [Voltorb](https://sketchfab.com/3d-models/voltorb-cd8079ed3d664a738b6c694504e2ef28)
   por nguyenlouis32, licença CC-BY-4.0.
 - Os modelos usam compressão Draco; o decodificador em `vendor/draco/` vem do

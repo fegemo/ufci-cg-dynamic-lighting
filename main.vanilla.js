@@ -47,9 +47,9 @@ const state = {
         draws: [],
         matrix: m4.identity(),
         options: [
-            { name: 'Sprigatito', url: './models/sprigatito.glb' },
+            { name: 'Voltorb', url: './models/voltorb.glb' },
             { name: 'Bulbasaur', url: './models/bulbasaur.glb' },
-            { name: 'Voltorb', url: './models/voltorb.glb' }
+            { name: 'Durant', url: './models/durant.glb' },
             // adicione outros modelos .glb aqui e eles aparecem no seletor
         ],
         selected: 0,
