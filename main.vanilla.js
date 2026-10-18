@@ -29,6 +29,13 @@ const state = {
         selected: 0,
         programs: []    // { id, locations } para cada opção
     },
+    // fundo: céu procedural desenhado com um triângulo de tela cheia
+    sky: {
+        program: null,
+        invViewProjectionLocation: null,
+        ambientLocation: null,
+        vao: null
+    },
     // programa simples que desenha o marcador da luz
     lightMarker: {
         program: null,
@@ -74,7 +81,7 @@ const state = {
     },
     // parâmetros do modelo de iluminação
     lighting: {
-        ambient: 0.2,
+        ambient: 0.4,           // também é a intensidade do céu
         diffuse: 0.8,
         specular: 0.5,
         shininess: 32
@@ -103,6 +110,32 @@ async function createShaderProgram(gl, prefix) {
     const locations = {}
     for (const name of UNIFORMS) locations[name] = gl.getUniformLocation(id, name)
     return { id, locations }
+}
+
+async function createSky(gl) {
+    const id = await createProgramFromFiles(gl, 'sky.vertex.glsl', 'sky.fragment.glsl')
+    state.sky.program = id
+    state.sky.invViewProjectionLocation = gl.getUniformLocation(id, 'u_invViewProjection')
+    state.sky.ambientLocation = gl.getUniformLocation(id, 'u_ambient')
+    // o triângulo é gerado no vertex shader, mas o WebGL exige um VAO ligado
+    state.sky.vao = gl.createVertexArray()
+}
+
+function drawSky(gl) {
+    const { camera, sky } = state
+    // só a rotação da câmera importa: o céu está "infinitamente" longe
+    const rotationOnly = m4.copy(camera.viewMatrix)
+    rotationOnly[12] = rotationOnly[13] = rotationOnly[14] = 0
+    const invViewProjection = m4.inverse(m4.multiply(state.projectionMatrix, rotationOnly))
+
+    gl.disable(gl.DEPTH_TEST)
+    gl.disable(gl.CULL_FACE)
+    gl.useProgram(sky.program)
+    gl.uniformMatrix4fv(sky.invViewProjectionLocation, false, invViewProjection)
+    gl.uniform1f(sky.ambientLocation, state.lighting.ambient)
+    gl.bindVertexArray(sky.vao)
+    gl.drawArrays(gl.TRIANGLES, 0, 3)
+    gl.enable(gl.DEPTH_TEST)
 }
 
 function createLightMarker(gl) {
@@ -144,11 +177,11 @@ export async function initialize(gl) {
         state.shaders.options.map(option => createShaderProgram(gl, option.prefix))
     )
     createLightMarker(gl)
+    await createSky(gl)
 
     await loadModel(gl, Number(state.model.selected))
 
     // inicializa o estado da aplicação
-    gl.clearColor(0.1, 0.1, 0.12, 1)
     gl.enable(gl.DEPTH_TEST)
 
     // projeção perspectiva (a mesma para todos os programas)
@@ -254,7 +287,8 @@ function updateCameraMatrix() {
 }
 
 export function render(gl) {
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    gl.clear(gl.DEPTH_BUFFER_BIT)
+    drawSky(gl)
 
     const { id, locations } = selectedProgram()
     const { camera, light, lighting } = state

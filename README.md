@@ -85,9 +85,11 @@ feitos no **espaço de mundo**.
 
 Vamos lá:
 
-- Exercício 0: Cor de Fundo
-    - Procure onde está definida a cor de fundo da cena (`gl.clearColor`) e
-      troque por outra cor. A ideia é se familiarizar com o arquivo.
+- Exercício 0: Cor do Céu
+    - O fundo da cena é um céu procedural, definido em `sky.glsl`. Procure
+      onde estão as cores e troque a cor do zênite por outra. A ideia é se
+      familiarizar com os arquivos. (O slider de ambiente também controla a
+      intensidade do céu.)
 - Exercício 1: Luz Ambiente
     - No `fragment.glsl`, declare os uniformes `u_lightColor` e `u_ambient` e
       devolva a componente ambiente em vez do albedo puro. Repare que o modelo
