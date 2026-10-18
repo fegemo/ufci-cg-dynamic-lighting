@@ -100,6 +100,7 @@ const state = {
 }
 
 const wireframeColor = new Float32Array([0, 0, 0])
+const wireframeOpacity = 0.15
 
 function selectedProgram() {
     return state.shaders.programs[Number(state.shaders.selected)]
@@ -330,11 +331,16 @@ export function render(gl) {
         gl.uniformMatrix4fv(marker.locations.u_view, false, camera.viewMatrix)
         gl.uniformMatrix4fv(marker.locations.u_projection, false, state.projectionMatrix)
         gl.uniform3fv(marker.locations.u_lightColor, wireframeColor)
+        // linhas translúcidas: a mistura usa a opacidade constante, sem mexer nos shaders
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.CONSTANT_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA)
+        gl.blendColor(0, 0, 0, wireframeOpacity)
         for (const draw of state.model.draws) {
             gl.uniformMatrix4fv(marker.locations.u_model, false, m4.multiply(state.model.matrix, draw.model))
             gl.bindVertexArray(draw.wireframeVao)
             gl.drawElements(gl.LINES, draw.wireframeCount, gl.UNSIGNED_INT, 0)
         }
+        gl.disable(gl.BLEND)
     }
 
     // desenha uma pequena esfera na posição da luz
