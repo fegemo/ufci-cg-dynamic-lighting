@@ -58,7 +58,7 @@ const state = {
     wireframe: false,               // mostrar as arestas do modelo
     // câmera orbital ao redor da origem (centro do modelo)
     camera: {
-        autoRotate: true,
+        autoRotate: false,
         autoRotateSpeed: 0.5,       // radianos por segundo
         azimuth: Math.PI / 6,       // ângulo horizontal
         elevation: 0.3,             // ângulo vertical
@@ -73,7 +73,7 @@ const state = {
     light: {
         position: [1.2, 1.5, 1.5],
         color: [1, 1, 1],
-        orbit: false,               // luz girando em torno do modelo
+        orbit: true,                // luz girando em torno do modelo
         orbitAngle: 0,
         orbitSpeed: 1.0,
         orbitRadius: 3.5,
