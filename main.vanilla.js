@@ -11,7 +11,8 @@ const UNIFORMS = [
     'u_model', 'u_view', 'u_projection',
     'u_texture', 'u_baseColor',
     'u_lightPosition', 'u_lightColor', 'u_cameraPosition',
-    'u_ambient', 'u_diffuse', 'u_specular', 'u_shininess'
+    'u_ambient', 'u_diffuse', 'u_specular', 'u_shininess',
+    'u_metallic', 'u_roughness', 'u_lightIntensity'
 ]
 
 const state = {
@@ -21,9 +22,10 @@ const state = {
         options: [
             // o "albedo" (vertex.glsl e fragment.glsl) é o ponto de partida do exercício
             { name: 'Albedo (sem iluminação)', prefix: '' },
-            { name: 'Gouraud', prefix: './shaders/gouraud.' },
-            { name: 'Phong', prefix: './shaders/phong.' },
-            { name: 'Blinn-Phong', prefix: './shaders/blinn-phong.' }
+            { name: 'Gouraud', prefix: 'shaders/gouraud.' },
+            { name: 'Phong', prefix: 'shaders/phong.' },
+            { name: 'Blinn-Phong', prefix: 'shaders/blinn-phong.' },
+            { name: 'PBR (Cook-Torrance)', prefix: 'shaders/pbr.' }
         ],
         selected: 0,
         programs: []    // { id, locations } para cada opção
@@ -84,6 +86,13 @@ const state = {
         diffuse: 0.8,
         specular: 0.5,
         shininess: 32
+    },
+    // parâmetros extras do shader PBR
+    pbr: {
+        lightIntensity: 25,         // a luz decai com 1/d², então precisa ser > 1
+        overrideMaterial: false,    // usa os sliders em vez dos valores do material
+        metallic: 0,
+        roughness: 0.5
     },
     // estado das teclas de controle da cena
     keys: {
@@ -293,12 +302,15 @@ export function render(gl) {
     gl.uniform1f(locations.u_diffuse, lighting.diffuse)
     gl.uniform1f(locations.u_specular, lighting.specular)
     gl.uniform1f(locations.u_shininess, lighting.shininess)
+    gl.uniform1f(locations.u_lightIntensity, state.pbr.lightIntensity)
     gl.uniform1i(locations.u_texture, 0)
 
     // desenha o modelo: cada draw tem sua própria matriz (hierarquia do gltf)
     for (const draw of state.model.draws) {
         gl.uniformMatrix4fv(locations.u_model, false, m4.multiply(state.model.matrix, draw.model))
         gl.uniform4fv(locations.u_baseColor, draw.baseColor)
+        gl.uniform1f(locations.u_metallic, state.pbr.overrideMaterial ? state.pbr.metallic : draw.metallic)
+        gl.uniform1f(locations.u_roughness, state.pbr.overrideMaterial ? state.pbr.roughness : draw.roughness)
         gl.activeTexture(gl.TEXTURE0)
         gl.bindTexture(gl.TEXTURE_2D, draw.texture)
         if (draw.doubleSided) gl.disable(gl.CULL_FACE); else gl.enable(gl.CULL_FACE)

@@ -65,6 +65,17 @@
           <label for="input-shininess">Brilho (n):</label>
           <input id="input-shininess" type="range" min="1" max="256" step="1" data-bind-value="state.lighting.shininess">
         </div>
+        <p>Apenas para o shader PBR:</p>
+        <div class="sliders">
+          <label for="input-light-intensity">Intensidade da luz:</label>
+          <input id="input-light-intensity" type="range" min="1" max="100" step="1" data-bind-value="state.pbr.lightIntensity">
+          <label for="input-override">Sobrescrever material:</label>
+          <input id="input-override" type="checkbox" data-bind-checked="state.pbr.overrideMaterial">
+          <label for="input-metallic">Metálico:</label>
+          <input id="input-metallic" type="range" min="0" max="1" step="0.01" data-bind-value="state.pbr.metallic">
+          <label for="input-roughness">Rugosidade:</label>
+          <input id="input-roughness" type="range" min="0" max="1" step="0.01" data-bind-value="state.pbr.roughness">
+        </div>
       </div>
     </details>
     <p class="credits">
