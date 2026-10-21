@@ -5,7 +5,7 @@ precision highp float;
 in vec3 v_normal;
 in vec3 v_worldPos;
 in vec2 v_texcoord;
-out vec4 outColor;
+out vec4 o_color;
 
 uniform sampler2D u_texture;
 uniform vec4 u_baseColor;
@@ -35,5 +35,5 @@ void main() {
     float specularFactor = diffuseFactor > 0.0 ? pow(max(dot(R, V), 0.0), u_shininess) : 0.0;
     vec3 specular = u_specular * specularFactor * u_lightColor;
 
-    outColor = vec4(ambient + diffuse + specular, 1.0);
+    o_color = vec4(ambient + diffuse + specular, 1.0);
 }

@@ -24,7 +24,7 @@ out vec2 v_texcoord;
 
 void main() {
     // normais não são transformadas pela matriz de modelo diretamente:
-    // precisamos da inversa transposta (para escalas não uniformes)
+    // precisamos da transposta da inversa (para escalas não uniformes)
     mat3 normalMatrix = transpose(inverse(mat3(u_model)));
     v_normal = normalMatrix * a_normal;
     v_worldPos = (u_model * vec4(a_coords, 1.0)).xyz;
