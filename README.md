@@ -5,23 +5,14 @@ a cor de cada pixel vir "pronta" da textura do modelo (o *albedo*), ela passa a
 ser calculada nos shaders a partir de uma luz, da posição da câmera e da
 orientação (normal) da superfície naquele ponto.
 
-A cena mostra um modelo glTF (`durant.glb`, `bulbasaur.glb` ou `voltorb.glb`, em `models/`, à sua escolha no seletor) com uma **câmera
-orbital** que gira automaticamente ao redor dele, e uma luz pontual (a esfera
-pequena). Você pode:
+A cena mostra um modelo glTF (em `models/`, à sua escolha no seletor) com uma 
+câmera controlada pelo mouse e uma luz pontual (posição coincidente com 
+uma esfera branca pequena). Você pode:
 
 - arrastar o mouse (ou o dedo) para girar a câmera e usar a roda para dar zoom
   (ao interagir, a rotação automática é pausada);
-- apertar <kbd>R</kbd> (ou usar o checkbox) para retomar/pausar a rotação
-  automática;
-- apertar <kbd>L</kbd> para fazer a luz orbitar o modelo;
 - apertar <kbd>W</kbd> (ou usar o checkbox) para mostrar/ocultar o wireframe;
-- apertar <kbd>S</kbd> (ou usar o seletor) para alternar entre os shaders;
 - ajustar a cor da luz e os coeficientes ambiente, difuso, especular e o brilho.
-
-Para usar outro modelo, coloque um `.glb` em `models/` e inclua-o em `model.options`
-no `state` do `main.vanilla.js`. O modelo é automaticamente centralizado e
-escalado para caber na cena.
-
 
 ## Modelos de iluminação
 
@@ -58,8 +49,9 @@ A diferença entre as técnicas está em **onde** e **como** a conta é feita:
 
 Você deve fazer a atividade nos arquivos `vertex.glsl` e `fragment.glsl`,
 que hoje desenham apenas o albedo (sem iluminação, a opção "Albedo" do
-seletor). Dê uma olhada também no `main.vanilla.js` para ver como os uniformes
-são enviados aos shaders.
+seletor). Se quiser, dê uma olhada também no `main.vanilla.js` para ver como 
+os uniformes são enviados aos shaders. Mas todo o exercício será feito em
+`vertex.glsl` e `fragment.glsl`.
 
 Os uniformes disponíveis são:
 
@@ -85,20 +77,15 @@ feitos no **espaço de mundo**.
 
 Vamos lá:
 
-- Exercício 0: Cor do Céu
-    - O fundo da cena é um céu procedural, definido em `sky.glsl`. Procure
-      onde estão as cores e troque a cor do zênite por outra. A ideia é se
-      familiarizar com os arquivos. (O slider de ambiente também controla a
-      intensidade do céu.)
 - Exercício 1: Luz Ambiente
-    - No `fragment.glsl`, declare os uniformes `u_lightColor` e `u_ambient` e
+    - Em `fragment.glsl`, declare os uniformes `u_lightColor` e `u_ambient` e
       devolva a componente ambiente em vez do albedo puro. Repare que o modelo
       todo fica "chapado": não há noção de forma ainda.
 - Exercício 2: Luz Difusa (Phong)
     - Use `v_normal` e `v_worldPos` (já repassados pelo vertex shader) e
       calcule `N` e `L` no fragment shader. **Normalize** a normal interpolada.
-    - Some a componente difusa. Use `max(..., 0.0)` para evitar luz negativa.
-    - Dica: `u_lightPosition` e `v_worldPos` estão no mesmo espaço (mundo).
+    - Some a componente difusa. Use `max(..., 0.0)` para evitar "luz negativa".
+    - Dica: `u_lightPosition` e `v_worldPos` estão no mesmo espaço (do mundo).
 - Exercício 3: Luz Especular (Phong)
     - Calcule `V` com `u_cameraPosition` e `R` com `reflect(-L, N)`.
     - Some o especular, `pow(max(dot(R, V), 0.0), u_shininess)`.
@@ -107,20 +94,24 @@ Vamos lá:
 - Exercício 4: Blinn-Phong
     - Troque `R · V` por `N · H`. Compare as duas versões. O que muda no
       brilho para o mesmo `n`?
-- Desafio 1: Gouraud
-    - Mova o cálculo da iluminação para o vertex shader e passe ao fragment
-      shader apenas o resultado a ser interpolado. Compare com o Phong
-      em um modelo com poucos vértices: o que acontece com o brilho especular?
+- Desafio 1: _Cell shading_
+    - Desenhos animados 2D, quando representam o sombreamento nos personagens,
+      tipicamente possuem "células": ou um pedaço do personagem está iluminado
+      ou não está (2 células). Phong/Gouraud geram um gradiente de iluminação.
+      Crie um novo _shader_ (cell.{vertex|fragment}.glsl) que implemente um
+      _cell shading_ de 2 ou 3 células.
+    - A ideia é algo do tipo: se o ângulo entre normal/luz está entre 0 e 45º,
+      o fragmento está iluminado. Se é maior que 45º, não está. 
 - Desafio 2: Atenuação
     - Faça a luz perder intensidade com a distância, por exemplo
       `1.0 / (1.0 + k * distancia²)`.
-- Desafio 3: Mais luzes
-    - Adicione uma segunda luz (uniformes novos no `main.vanilla.js`) com
-      outra cor e posição.
 
 Para conferir seu resultado, os arquivos `gouraud.*`, `phong.*` e
 `blinn-phong.*` (`.vertex.glsl` e `.fragment.glsl`) são implementações de
 referência, selecionáveis na interface. Só espie **depois** de tentar. 😉
+Prefira conversar com os colegas e com o professor antes de visualizar
+esses arquivos.
+
 
 ℹ️ Observação: estamos usando o utilitário matemático da
 TWGL.js. Em particular, para matrizes 4x4 ([m4][m4-docs]) e
