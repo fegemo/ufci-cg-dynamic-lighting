@@ -2,7 +2,7 @@
 
 precision highp float;
 
-#include "sky.glsl"
+#include "shaders/sky.glsl"
 
 in vec3 v_direction;
 out vec4 o_color;

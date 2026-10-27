@@ -21,9 +21,9 @@ const state = {
         options: [
             // o "albedo" (vertex.glsl e fragment.glsl) é o ponto de partida do exercício
             { name: 'Albedo (sem iluminação)', prefix: '' },
-            { name: 'Gouraud', prefix: 'gouraud.' },
-            { name: 'Phong', prefix: 'phong.' },
-            { name: 'Blinn-Phong', prefix: 'blinn-phong.' }
+            { name: 'Gouraud', prefix: './shaders/gouraud.' },
+            { name: 'Phong', prefix: './shaders/phong.' },
+            { name: 'Blinn-Phong', prefix: './shaders/blinn-phong.' }
         ],
         selected: 0,
         programs: []    // { id, locations } para cada opção
@@ -113,7 +113,7 @@ async function createShaderProgram(gl, prefix) {
 }
 
 async function createSky(gl) {
-    const id = await createProgramFromFiles(gl, 'sky.vertex.glsl', 'sky.fragment.glsl')
+    const id = await createProgramFromFiles(gl, 'shaders/sky.vertex.glsl', 'shaders/sky.fragment.glsl')
     state.sky.program = id
     state.sky.invViewProjectionLocation = gl.getUniformLocation(id, 'u_invViewProjection')
     state.sky.ambientLocation = gl.getUniformLocation(id, 'u_ambient')
@@ -139,7 +139,7 @@ function drawSky(gl) {
 }
 
 async function createLightMarker(gl) {
-    const id = await createProgramFromFiles(gl, 'marker.vertex.glsl', 'marker.fragment.glsl')
+    const id = await createProgramFromFiles(gl, 'shaders/marker.vertex.glsl', 'shaders/marker.fragment.glsl')
     const locations = {}
     for (const name of ['u_model', 'u_view', 'u_projection', 'u_lightColor']) {
         locations[name] = gl.getUniformLocation(id, name)

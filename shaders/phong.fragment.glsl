@@ -13,6 +13,7 @@ uniform vec4 u_baseColor;
 uniform vec3 u_lightPosition;
 uniform vec3 u_lightColor;
 uniform vec3 u_cameraPosition;
+
 uniform float u_ambient;
 uniform float u_diffuse;
 uniform float u_specular;
